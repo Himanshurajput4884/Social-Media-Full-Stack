@@ -10,7 +10,10 @@ import { useEffect, useContext, useState } from "react";
 import { LoginContext } from "./components/ContextProvider/Context";
 import Forget from "./components/Forget";
 import Change from "./components/Change"
-
+import Home from "./components/Home";
+import AddPost from "./components/AddPost";
+import DetailView from "./components/Details/DetailView";
+import UpdatePost from "./components/UpdatePost";
 
 function App() {
 
@@ -39,7 +42,7 @@ function App() {
     } else {
       console.log("user verify");
       setLoginData(data)
-      history("/dash");
+      history("/");
     }
   }
 
@@ -59,7 +62,11 @@ function App() {
             <Header />
 
             <Routes>
-              <Route path="/" element={<Login />} />
+              <Route path="/" element={<Home />} />
+              <Route path="/getPost/:id" element={<DetailView />} />
+              <Route path="/update/:id" element={<UpdatePost />} />
+              <Route path="/create/post" element={<AddPost />} />
+              <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/dash" element={<Dashboard />} />
               <Route path="/forget" element={<Forget />} />

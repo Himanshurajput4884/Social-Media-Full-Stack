@@ -5,11 +5,14 @@ import { LoginContext } from './ContextProvider/Context';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { useNavigate , NavLink } from "react-router-dom"
+import Button from 'react-bootstrap/Button';
+import { ButtonBase } from '@mui/material';
+
 
 const Header = () => {
 
     const { logindata, setLoginData } = useContext(LoginContext);
-
+    console.log(logindata);
     const history = useNavigate();
 
     const [anchorEl, setAnchorEl] = React.useState(null);
@@ -61,10 +64,14 @@ const Header = () => {
             <header>
                 <nav>
                     
-                <NavLink to="/"><h1>Authentication</h1></NavLink>
+                <NavLink to="/"><h1>Blog Post</h1></NavLink>
+                { logindata.ValidUserOne ? 
+                <NavLink to="/create/post" style={{"textDecorationLine":"none"}}>Add Post</NavLink> : 
+                <NavLink to="/login" style={{"text-decoration-line":"none"}}>Add Post</NavLink>}
                     <div className="avtar">
                         {
-                            logindata.ValidUserOne ? <Avatar style={{ background: "salmon", fontWeight: "bold", textTransform: "capitalize" }} onClick={handleClick}>{logindata.ValidUserOne.fname[0].toUpperCase()}</Avatar> :
+                            logindata.ValidUserOne ? 
+                            <Avatar style={{ background: "salmon", fontWeight: "bold", textTransform: "capitalize" }} onClick={handleClick}>{logindata.ValidUserOne.fname[0].toUpperCase()}</Avatar> :
                                 <Avatar style={{ background: "blue" }} onClick={handleClick} />
                         }
 
@@ -93,6 +100,7 @@ const Header = () => {
                                 </>
                             ) : (
                                 <>
+                                    <MenuItem><NavLink to="/login" style={{"color":"black", "text-decoration-line":"none"}}>Login</NavLink></MenuItem>
                                     <MenuItem onClick={() => {
                                         goError()
                                         handleClose()

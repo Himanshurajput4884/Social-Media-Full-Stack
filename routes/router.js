@@ -3,10 +3,13 @@ const router = new express.Router();
 const userdb = require("../models/userSchema");
 var bcrypt = require("bcryptjs");
 const authenticate = require("../middleware/authenticate");
+const upload = require("../middleware/upload");
+const Post = require("../models/postschema");
+const mongoose = require('mongoose');
+const grid = require("gridfs-stream");
 
-
+let gfs, gridfsBucket;
 // for user registration
-
 router.post("/register", async (req, res) => {
 
     const { fname, email, password, cpassword } = req.body;
@@ -161,6 +164,128 @@ router.get("/logout",authenticate,async(req,res)=>{
     }
 })
 
+router.post("/file/upload", upload.single('file'), (req, res) =>{
+    try{
+        if(!req.file){
+            return res.status(401).json({error: "File is missing."});
+        }
+        const imageUrl = `http://localhost:8009/file/${req.file.filename}`;
+        return res.status(201).json({ imageUrl: imageUrl});
+    }
+    catch(error){
+        console.log("Error in router /file/upload, ", error);
+        return res.status(401).json({ error: error});
+    }
+})
+
+router.post("/create", authenticate, async (req, res) =>{
+    try{
+        const getPost = await new Post(req.body);
+        getPost.save();
+        return res.status(201).json({ success: "Post Upolad Success" });
+    }
+    catch(error){
+        console.log("Error in /create, ", error);
+        return res.status(401).json({ error: "Post not upload" });
+    }
+})
+
+
+router.get("/posts",  async (req,  res)=>{
+    try{
+        let posts = await Post.find({});
+        return res.status(201).json(posts);
+    }
+    catch(error){
+        console.log("Error in /create, ", error);
+        return res.status(401).json({ error: "Error getting all posts" });
+    }
+})
+
+const conn = mongoose.connection;
+conn.once('open', () => {
+    gridfsBucket = new mongoose.mongo.GridFSBucket(conn.db, {
+        bucketName: 'fs'
+    });
+    gfs = grid(conn.db, mongoose.mongo);
+    gfs.collection('fs');
+});
+
+// get image using filename, got in middleware
+router.get('/file/:filename', async (req, res)=>{
+    try{
+        const file = await gfs.files.findOne({ filename: req.params.filename });
+        // const readStream = gfs.createReadStream(file.filename);
+        // readStream.pipe(response);
+        const readStream = gridfsBucket.openDownloadStream(file._id);
+        readStream.pipe(res);
+    }
+    catch(error){
+        console.log("Error in /file/:filename, ",error);
+        res.status(401).json({error: error});
+    }
+})
+
+// get post by id
+router.get("/post/:id", authenticate,  async(req,res)=>{
+    try{
+        const id = req.params.id;
+        const post = await Post.findById(id);
+        return res.status(201).json(post);
+    }
+    catch(err){
+        console.log("error in /post/:id, ", err);
+        return res.status(401).json({error: err});
+    }
+})
+
+
+// to update the post
+router.put("/update/:id", authenticate, async(req, res)=>{
+    try{
+        const id = req.params.id;
+        const post = await Post.findById(id);
+        if(!post){
+            return res.status(401).json({err: "Post not found."});
+        }
+        Post.findByIdAndUpdate(id, req.body, {new:true}, (err, user)=>{
+            if(err){
+                console.log(err);
+            }
+            else{
+                console.log(user);
+            }
+        })
+        return res.status(201).json({success: "Post Update Successfully"});
+    }
+    catch(err){
+        console.log("Error in /update/:id, ", err);
+        return res.status(401).json({error: err});
+    }
+})
+
+// route to delete the post
+router.delete("/delete/:id",  async(req, res)=>{
+    try{
+        const id = req.params.id;
+        const post = Post.findById(id);
+        if(!post){
+            return res.status(401).json({err: "Post Not Found."});
+        }
+        Post.deleteOne({ _id: id }, (err) => {
+            if (err) {
+              console.log(err);
+            } else {
+              console.log('Post deleted successfully');
+              return res.status(201).json({success: "Post Deleted"});
+            }
+          });
+    }
+    catch(err){
+        console.log("Error in delete Post, ", err);
+        return res.status(401).json({err:"Post not deleted"});
+    }
+})
 
 module.exports = router;
 
