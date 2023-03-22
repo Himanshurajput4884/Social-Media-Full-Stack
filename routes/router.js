@@ -7,6 +7,7 @@ const upload = require("../middleware/upload");
 const Post = require("../models/postschema");
 const mongoose = require('mongoose');
 const grid = require("gridfs-stream");
+const comment = require("../models/comment");
 
 let gfs, gridfsBucket;
 // for user registration
@@ -284,6 +285,30 @@ router.delete("/delete/:id",  async(req, res)=>{
     catch(err){
         console.log("Error in delete Post, ", err);
         return res.status(401).json({err:"Post not deleted"});
+    }
+})
+
+// add new comment
+
+router.post("comments/new", async (request, response) => {
+    try {
+        const comment = await new Comment(request.body);
+        comment.save();
+
+        response.status(201).json('Comment saved successfully');
+    } catch (error) {
+        response.status(401).json(error);
+    }
+})
+
+
+router.get("", async (request, response) => {
+    try {
+        const comments = await Comment.find({ postId: request.params.id });
+        
+        response.status(201).json(comments);
+    } catch (error) {
+        response.status(401).json(error)
     }
 })
 
