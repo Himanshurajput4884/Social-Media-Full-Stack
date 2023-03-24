@@ -64,7 +64,7 @@ const Header = () => {
             <header>
                 <nav>
                     
-                <NavLink to="/"><h1>Blog Post</h1></NavLink>
+                <NavLink to="/"><h1>Social Media</h1></NavLink>
                 { logindata.ValidUserOne ? 
                 <NavLink to="/create/post" style={{"textDecorationLine":"none"}}>Add Post</NavLink> : 
                 <NavLink to="/login" style={{"text-decoration-line":"none"}}>Add Post</NavLink>}

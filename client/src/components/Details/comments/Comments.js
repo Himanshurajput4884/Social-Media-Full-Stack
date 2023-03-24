@@ -3,7 +3,7 @@ import { Box, TextareaAutosize, Button, styled } from '@mui/material';
 import { LoginContext } from '../../ContextProvider/Context';
 
 //components
-// import Comment from './Comment';
+import Comment from './Comment';
 // 
 const Container = styled(Box)`
     margin-top: 100px;
@@ -32,19 +32,32 @@ const initialValue = {
 const Comments = ({ post }) => {
     const url = 'https://static.thenounproject.com/png/12017-200.png'
     const { logindata, setLoginData } = useContext(LoginContext);
-    const [comment, setComment] = useState(initialValue);
-    const [comments, setComments] = useState([]);
+    const [comment, setComment] = useState(initialValue);     // used in to add comment
+    const [comments, setComments] = useState([]);            // used in to get all comments
     const [toggle, setToggle] = useState(false);
-
-
     let token = localStorage.getItem("usersdatatoken");
 
+    const id = post._id;
     useEffect(() => {
         const getData = async () => {
-        
+            let urlc = `http://localhost:8009/comment/${id}`;
+            await fetch(urlc, {
+                method: "GET",
+                "Content-Type":"application/json",
+                "Authorization": token,
+                Accept: "application/json",
+            })
+            .then((res)=>res.json())
+            .then((response)=>{
+                console.log(response.data);
+                setComments(response.data);
+            })
+            .catch((err)=>{
+                console.log(err);
+            })
         }
         getData();
-    }, [toggle, post]);
+    }, [post, setToggle]);
 
     const handleChange = (e) => {
         setComment({
@@ -66,6 +79,7 @@ const Comments = ({ post }) => {
             body: JSON.stringify(comment),
           })
           const response = await data2.json();
+          console.log(response);
           if(response.success){
                 setComment(initialValue)
           }
@@ -90,13 +104,13 @@ const Comments = ({ post }) => {
                     onClick={(e) => addComment(e)}
                 >Post</Button>             
             </Container>
-            {/* <Box>
+            <Box>
                 {
                     comments && comments.length > 0 && comments.map(comment => (
-                        // <Comment comment={comment} setToggle={setToggle} />
+                        <Comment comment={comment}  setToggle={setToggle}/>
                     ))
                 }
-            </Box> */}
+            </Box>
         </Box>
     )
 }

@@ -51,11 +51,12 @@ const Post = ({ post }) => {
   const addEllipsis = (str, limit) => {
     return str.length > limit ? str.substring(0, limit) + "..." : str;
   };
-
+  
   return (
     <Container>
       <Image src={url} alt="post" />
       <Heading>{addEllipsis(post.title, 20)}</Heading>
+      {/* <Heading>{post.title}</Heading> */}
       <Text>Post by: {post.username}</Text>
     </Container>
   );

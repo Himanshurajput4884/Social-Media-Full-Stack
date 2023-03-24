@@ -7,7 +7,7 @@ const upload = require("../middleware/upload");
 const Post = require("../models/postschema");
 const mongoose = require('mongoose');
 const grid = require("gridfs-stream");
-const comment = require("../models/comment");
+const comment = require("../models/comment")
 
 let gfs, gridfsBucket;
 // for user registration
@@ -97,7 +97,6 @@ router.post("/login", async (req, res) => {
 
 
 // check email 
-
 router.post("/check/email", async(req, res)=>{
     const email = req.body.email;
     try{
@@ -119,7 +118,6 @@ router.post("/check/email", async(req, res)=>{
 })
 
 // change password
-
 router.post("/change", async (req, res)=>{
     const email = req.body.email;
     const updates = req.body;
@@ -147,7 +145,6 @@ router.get("/validuser",authenticate,async(req,res)=>{
 
 
 // user logout
-
 router.get("/logout",authenticate,async(req,res)=>{
     try {
         req.rootUser.tokens =  req.rootUser.tokens.filter((curelem)=>{
@@ -165,6 +162,7 @@ router.get("/logout",authenticate,async(req,res)=>{
     }
 })
 
+// to upload file to the mongodb database
 router.post("/file/upload", upload.single('file'), (req, res) =>{
     try{
         if(!req.file){
@@ -179,6 +177,7 @@ router.post("/file/upload", upload.single('file'), (req, res) =>{
     }
 })
 
+// to save the post to the database
 router.post("/create", authenticate, async (req, res) =>{
     try{
         const getPost = await new Post(req.body);
@@ -191,7 +190,7 @@ router.post("/create", authenticate, async (req, res) =>{
     }
 })
 
-
+// to get all the posts
 router.get("/posts",  async (req,  res)=>{
     try{
         let posts = await Post.find({});
@@ -289,28 +288,61 @@ router.delete("/delete/:id",  async(req, res)=>{
 })
 
 // add new comment
-
-router.post("comments/new", async (request, response) => {
+router.post("/comment/new", async (request, response) => {
     try {
-        const comment = await new Comment(request.body);
-        comment.save();
+        console.log(request.body);
+        const { name, postId, date, comments } = request.body;
+        const Comment = new comment({name, postId, date, comments});
+        const res = await Comment.save();
 
-        response.status(201).json('Comment saved successfully');
+        response.status(201).json({success: res});
     } catch (error) {
-        response.status(401).json(error);
+        console.log("Error in adding new comment: ", error);
+        response.status(401).json({error: error});
     }
 })
 
 
-router.get("", async (request, response) => {
-    try {
-        const comments = await Comment.find({ postId: request.params.id });
-        
-        response.status(201).json(comments);
-    } catch (error) {
-        response.status(401).json(error)
+// to Get comments with particular blog_id
+router.get("/comment/:id", async (req, res)=>{
+    try{
+        const { id } = req.params;
+        const Comments = comment.find({postId: id}, function(err, docs){
+            if(err){
+                console.log("error: ", err);
+            }
+            return res.status(201).json({data: docs});
+        });
+    }
+    catch(error){
+        console.log("Error in get comment by id: ", error);
+        return res.status(401).json({error: error});
     }
 })
+
+// to delete the comment
+router.delete("/del/:id", async(req, res) =>{
+    try{
+        const id = req.params.id;
+        const comm = await comment.findById(id);
+        if(!comm){
+            return res.status(401).json({error: "Comment not found."});
+        }
+        await comm.deleteOne({_id: id}, (error)=>{
+            if(error){
+                console.log("Error in deleting comment ",error);
+                return res.status(401).json({error: error});
+            }
+            return res.status(201).json({success: "Comment Deleted Successfully."});
+        })
+
+    }
+    catch(error){
+        console.log("Error in deleting comment: ", error);
+        return res.status(401).json({error: error});
+    }
+})
+
 
 module.exports = router;
 

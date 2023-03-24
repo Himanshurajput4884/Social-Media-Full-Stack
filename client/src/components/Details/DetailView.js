@@ -57,10 +57,11 @@ const DetailView = () => {
     const { logindata, setLoginData } = useContext(LoginContext);
     console.log(logindata);
     const [post, setPost] = useState({});
-
     const navigate = useNavigate();
     const { id } = useParams();
     let token = localStorage.getItem("usersdatatoken");
+
+
     useEffect(() => {
         const fetchData = async () => {
             fetch(`/post/${id}`, {
@@ -82,6 +83,7 @@ const DetailView = () => {
         }
         fetchData();
     }, []);
+
 
     const deleteBlog = async () => {
         token = localStorage.getItem("usersdatatoken");
@@ -110,7 +112,6 @@ const DetailView = () => {
             console.log(error);
           });
     }
-    // console.log(post);
 
     return (
         <Container>
@@ -132,9 +133,8 @@ const DetailView = () => {
                 </Link>
                 <Typography style={{marginLeft: 'auto'}}>{new Date(post.createdAt).toDateString()}</Typography>
             </Author>
-
             <Typography>{post.description}</Typography>
-            <Comments post={post} />
+            <Comments post={post}/>
         </Container>
     )
 }
