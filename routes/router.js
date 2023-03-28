@@ -51,7 +51,6 @@ router.post("/register", async (req, res) => {
 
 
 // user Login
-
 router.post("/login", async (req, res) => {
     // console.log(req.body);
 
@@ -137,7 +136,7 @@ router.get("/validuser",authenticate,async(req,res)=>{
     console.log(req.userId);
     try {
         const ValidUserOne = await userdb.findOne({_id:req.userId});
-        res.status(201).json({status:201,ValidUserOne});
+        return res.status(201).json({status:201,ValidUserOne});
     } catch (error) {
         res.status(401).json({status:401,error});
     }
